@@ -3,7 +3,6 @@ package net.minecraft.client.gui;
 import net.lax1dude.eaglercraft.v1_8.EagRuntime;
 import net.lax1dude.eaglercraft.v1_8.Mouse;
 import net.lax1dude.eaglercraft.v1_8.PauseMenuCustomizeState;
-import net.lax1dude.eaglercraft.v1_8.minecraft.GuiButtonWithStupidIcons;
 import net.lax1dude.eaglercraft.v1_8.notifications.GuiButtonNotifBell;
 import net.lax1dude.eaglercraft.v1_8.notifications.GuiScreenNotifications;
 import net.lax1dude.eaglercraft.v1_8.opengl.GlStateManager;
@@ -74,10 +73,8 @@ public class GuiIngameMenu extends GuiScreen {
 		this.updateCheckerOverlay.setResolution(mc, width, height);
 		byte b0 = -16;
 		boolean flag = true;
-		this.buttonList.add(new GuiButtonWithStupidIcons(1, this.width / 2 - 100, this.height / 4 + 120 + b0,
-				I18n.format("menu.returnToMenu", new Object[0]), PauseMenuCustomizeState.icon_disconnect_L,
-				PauseMenuCustomizeState.icon_disconnect_L_aspect, PauseMenuCustomizeState.icon_disconnect_R,
-				PauseMenuCustomizeState.icon_disconnect_R_aspect));
+		this.buttonList.add(new GuiButton(1, this.width / 2 - 100, this.height / 4 + 120 + b0,
+				I18n.format("menu.returnToMenu", new Object[0])));
 		if (!this.mc.isIntegratedServerRunning()) {
 			((GuiButton) this.buttonList.get(0)).displayString = I18n.format("menu.disconnect", new Object[0]);
 			if (this.mc.thePlayer != null && this.mc.thePlayer.sendQueue.getEaglerMessageProtocol().ver >= 4) {
@@ -86,28 +83,18 @@ public class GuiIngameMenu extends GuiScreen {
 			}
 		}
 
-		this.buttonList.add(new GuiButtonWithStupidIcons(4, this.width / 2 - 100, this.height / 4 + 24 + b0,
-				I18n.format("menu.returnToGame", new Object[0]), PauseMenuCustomizeState.icon_backToGame_L,
-				PauseMenuCustomizeState.icon_backToGame_L_aspect, PauseMenuCustomizeState.icon_backToGame_R,
-				PauseMenuCustomizeState.icon_backToGame_R_aspect));
-		this.buttonList.add(new GuiButtonWithStupidIcons(0, this.width / 2 - 100, this.height / 4 + 96 + b0, 98, 20,
-				I18n.format("menu.options", new Object[0]), PauseMenuCustomizeState.icon_options_L,
-				PauseMenuCustomizeState.icon_options_L_aspect, PauseMenuCustomizeState.icon_options_R,
-				PauseMenuCustomizeState.icon_options_R_aspect));
+		this.buttonList.add(new GuiButton(4, this.width / 2 - 100, this.height / 4 + 24 + b0,
+				I18n.format("menu.returnToGame", new Object[0])));
+		this.buttonList.add(new GuiButton(0, this.width / 2 - 100, this.height / 4 + 96 + b0, 98, 20,
+				I18n.format("menu.options", new Object[0])));
 		this.buttonList
-				.add(lanButton = new GuiButtonWithStupidIcons(7, this.width / 2 + 2, this.height / 4 + 96 + b0, 98, 20,
+				.add(lanButton = new GuiButton(7, this.width / 2 + 2, this.height / 4 + 96 + b0, 98, 20,
 						I18n.format(LANServerController.isLANOpen() ? "menu.closeLan" : "menu.openToLan",
-								new Object[0]),
-						PauseMenuCustomizeState.icon_discord_L, PauseMenuCustomizeState.icon_discord_L_aspect,
-						PauseMenuCustomizeState.icon_discord_R, PauseMenuCustomizeState.icon_discord_R_aspect));
-		this.buttonList.add(new GuiButtonWithStupidIcons(5, this.width / 2 - 100, this.height / 4 + 48 + b0, 98, 20,
-				I18n.format("gui.achievements", new Object[0]), PauseMenuCustomizeState.icon_achievements_L,
-				PauseMenuCustomizeState.icon_achievements_L_aspect, PauseMenuCustomizeState.icon_achievements_R,
-				PauseMenuCustomizeState.icon_achievements_R_aspect));
-		this.buttonList.add(new GuiButtonWithStupidIcons(6, this.width / 2 + 2, this.height / 4 + 48 + b0, 98, 20,
-				I18n.format("gui.stats", new Object[0]), PauseMenuCustomizeState.icon_statistics_L,
-				PauseMenuCustomizeState.icon_statistics_L_aspect, PauseMenuCustomizeState.icon_statistics_R,
-				PauseMenuCustomizeState.icon_statistics_R_aspect));
+								new Object[0])));
+		this.buttonList.add(new GuiButton(5, this.width / 2 - 100, this.height / 4 + 48 + b0, 98, 20,
+				I18n.format("gui.achievements", new Object[0])));
+		this.buttonList.add(new GuiButton(6, this.width / 2 + 2, this.height / 4 + 48 + b0, 98, 20,
+				I18n.format("gui.stats", new Object[0])));
 		lanButton.enabled = SingleplayerServerController.isWorldRunning();
 		if (PauseMenuCustomizeState.discordButtonMode != PauseMenuCustomizeState.DISCORD_MODE_NONE) {
 			lanButton.enabled = true;
@@ -115,10 +102,8 @@ public class GuiIngameMenu extends GuiScreen {
 			lanButton.displayString = "" + PauseMenuCustomizeState.discordButtonText;
 		}
 		if (PauseMenuCustomizeState.serverInfoMode != PauseMenuCustomizeState.DISCORD_MODE_NONE) {
-			this.buttonList.add(new GuiButtonWithStupidIcons(9, this.width / 2 - 100, this.height / 4 + 72 + b0,
-					PauseMenuCustomizeState.serverInfoButtonText, PauseMenuCustomizeState.icon_serverInfo_L,
-					PauseMenuCustomizeState.icon_serverInfo_L_aspect, PauseMenuCustomizeState.icon_serverInfo_R,
-					PauseMenuCustomizeState.icon_serverInfo_R_aspect));
+			this.buttonList.add(new GuiButton(9, this.width / 2 - 100, this.height / 4 + 72 + b0,
+					PauseMenuCustomizeState.serverInfoButtonText));
 		}
 		if (!hasSentAutoSave) {
 			hasSentAutoSave = true;

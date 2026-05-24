@@ -105,6 +105,10 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback {
 			new ResourceLocation("textures/gui/title/background/panorama_3.png"),
 			new ResourceLocation("textures/gui/title/background/panorama_4.png"),
 			new ResourceLocation("textures/gui/title/background/panorama_5.png") };
+
+private static final ResourceLocation TSP_BG =
+    new ResourceLocation("textures/gui/title/tsp_bg.png");
+
 	private int field_92024_r;
 	private int field_92023_s;
 	private int field_92022_t;
@@ -122,7 +126,7 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback {
 
 	public GuiMainMenu() {
 		instance = this;
-		this.splashText = "missingno";
+		this.splashText = "";
 		updateCheckerOverlay = new GuiUpdateCheckerOverlay(false, this);
 		BufferedReader bufferedreader = null;
 
@@ -223,6 +227,9 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback {
 	 */
 	public void updateScreen() {
 		++this.panoramaTimer;
+		if (this.panoramaTimer < 2) {
+    this.panoramaTimer = 2;
+}
 		if (downloadOfflineButton != null) {
 			downloadOfflineButton.enabled = !UpdateService.shouldDisableDownloadButton();
 		}
@@ -262,6 +269,7 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback {
 			backgroundTexture2 = this.mc.getTextureManager().getDynamicTextureLocation("background", viewportTexture2);
 		}
 		this.updateCheckerOverlay.setResolution(mc, width, height);
+		this.panoramaTimer = 0;
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(new Date());
 		if (calendar.get(2) + 1 == 12 && calendar.get(5) == 24) {
@@ -596,171 +604,109 @@ public class GuiMainMenu extends GuiScreen implements GuiYesNoCallback {
 	 * Draws the screen and all the components in it. Args : mouseX,
 	 * mouseY, renderPartialTicks
 	 */
-	public void drawScreen(int i, int j, float f) {
-		GlStateManager.disableAlpha();
-		if (enableBlur) {
-			this.renderSkybox(i, j, f);
-		} else {
-			this.drawPanorama(i, j, f);
-		}
-		GlStateManager.enableAlpha();
-		short short1 = 274;
-		int k = this.width / 2 - short1 / 2;
-		byte b0 = 30;
-		if (enableBlur) {
-			this.drawGradientRect(0, 0, this.width, this.height, -2130706433, 16777215);
-			this.drawGradientRect(0, 0, this.width, this.height, 0, Integer.MIN_VALUE);
-		}
-		this.mc.getTextureManager().bindTexture(minecraftTitleTextures);
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		boolean minc = (double) this.updateCounter < 1.0E-4D;
-		if (this.isDefault) {
-			minc = !minc;
-		}
-		if (minc) {
-			this.drawTexturedModalRect(k + 0, b0 + 0, 0, 0, 99, 44);
-			this.drawTexturedModalRect(k + 99, b0 + 0, 129, 0, 27, 44);
-			this.drawTexturedModalRect(k + 99 + 26, b0 + 0, 126, 0, 3, 44);
-			this.drawTexturedModalRect(k + 99 + 26 + 3, b0 + 0, 99, 0, 26, 44);
-			this.drawTexturedModalRect(k + 154, b0 + 0, 0, 45, 155, 44);
-		} else {
-			this.drawTexturedModalRect(k + 0, b0 + 0, 0, 0, 155, 44);
-			this.drawTexturedModalRect(k + 155, b0 + 0, 0, 45, 155, 44);
-		}
+	private static final ResourceLocation TSP_BACKGROUND =
+        new ResourceLocation("textures/gui/title/background/tsp_bg.png");
 
-		boolean isForkLabel = ((this.openGLWarning1 != null && this.openGLWarning1.length() > 0)
-				|| (this.openGLWarning2 != null && this.openGLWarning2.length() > 0));
+public void drawScreen(int i, int j, float f) {
+    // 1. REMOVED THE HARD BLACK CLEAR TO ALLOW SKYBOX/BACKGROUNDS TO SHOW
+    // =========================
+    // BACKGROUND (FIXED)
+    // =========================
+    this.mc.getTextureManager().bindTexture(TSP_BACKGROUND);
+    
+    // CRITICAL FIX: stop texture tiling
+    EaglercraftGPU.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    EaglercraftGPU.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    // draw proper fullscreen quad (no UV stretching issues)
+    drawModalRectWithCustomSizedTexture(
+        0, 0, 0.0F, 0.0F, this.width, this.height, this.width, this.height
+    );
+    GlStateManager.enableAlpha();
 
-		if (isForkLabel) {
-			drawRect(this.field_92022_t - 3, this.field_92021_u - 3, this.field_92020_v + 3, this.field_92019_w,
-					1428160512);
-			if (this.openGLWarning1 != null)
-				this.drawString(this.fontRendererObj, this.openGLWarning1, this.field_92022_t, this.field_92021_u, -1);
-			if (this.openGLWarning2 != null)
-				this.drawString(this.fontRendererObj, this.openGLWarning2, (this.width - this.field_92024_r) / 2,
-						this.field_92021_u + 12, -1);
-		}
+    // =========================
+    // GUI LAYOUT
+    // =========================
+    short short1 = 274;
+    int k = this.width / 2 - short1 / 2;
+    byte b0 = 30;
 
-		GlStateManager.pushMatrix();
-		GlStateManager.translate((float) (this.width / 2 + 90), 70.0F, 0.0F);
-		GlStateManager.rotate(isForkLabel ? -12.0F : -20.0F, 0.0F, 0.0F, 1.0F);
-		float f1 = 1.8F - MathHelper
-				.abs(MathHelper.sin((float) (Minecraft.getSystemTime() % 1000L) / 1000.0F * 3.1415927F * 2.0F) * 0.1F);
-		f1 = f1 * 100.0F / (float) (this.fontRendererObj.getStringWidth(this.splashText) + 32);
-		if (isForkLabel) {
-			f1 *= 0.8f;
-		}
-		GlStateManager.scale(f1, f1, f1);
-		this.drawCenteredString(this.fontRendererObj, this.splashText, 0, -8, -256);
-		GlStateManager.popMatrix();
+    // optional gradient overlay
+    if (enableBlur) {
+        this.drawGradientRect(0, 0, this.width, this.height, -2130706433, 16777215);
+        this.drawGradientRect(0, 0, this.width, this.height, 0, Integer.MIN_VALUE);
+    }
 
-		String s = EaglercraftVersion.mainMenuStringA;
-		if (this.mc.isDemo()) {
-			s += " Demo";
-		}
-		this.drawString(this.fontRendererObj, s, 2, this.height - 20, -1);
-		s = EaglercraftVersion.mainMenuStringB;
-		this.drawString(this.fontRendererObj, s, 2, this.height - 10, -1);
+    // =========================
+    // MINECRAFT LOGO
+    // =========================
+    this.mc.getTextureManager().bindTexture(minecraftTitleTextures);
+    GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+    boolean minc = (double) this.updateCounter < 1.0E-4D;
+    if (this.isDefault) {
+        minc = !minc;
+    }
+    if (minc) {
+        this.drawTexturedModalRect(k + 0, b0 + 0, 0, 0, 99, 44);
+        this.drawTexturedModalRect(k + 99, b0 + 0, 129, 0, 27, 44);
+        this.drawTexturedModalRect(k + 99 + 26, b0 + 0, 126, 0, 3, 44);
+        this.drawTexturedModalRect(k + 99 + 26 + 3, b0 + 0, 99, 0, 26, 44);
+        this.drawTexturedModalRect(k + 154, b0 + 0, 0, 45, 155, 44);
+    } else {
+        this.drawTexturedModalRect(k + 0, b0 + 0, 0, 0, 155, 44);
+        this.drawTexturedModalRect(k + 155, b0 + 0, 0, 45, 155, 44);
+    }
 
-		String s1 = EaglercraftVersion.mainMenuStringC;
-		this.drawString(this.fontRendererObj, s1, this.width - this.fontRendererObj.getStringWidth(s1) - 2,
-				this.height - 20, -1);
-		s1 = EaglercraftVersion.mainMenuStringD;
-		if (this.mc.isDemo()) {
-			s1 = "Copyright Mojang AB. Do not distribute!";
-		}
-		this.drawString(this.fontRendererObj, s1, this.width - this.fontRendererObj.getStringWidth(s1) - 2,
-				this.height - 10, -1);
+    // =========================
+    // WARNING LABEL
+    // =========================
+    boolean isForkLabel = (this.openGLWarning1 != null && this.openGLWarning1.length() > 0) || (this.openGLWarning2 != null && this.openGLWarning2.length() > 0);
+    if (isForkLabel) {
+        drawRect(
+            this.field_92022_t - 3, this.field_92021_u - 3, this.field_92020_v + 3, this.field_92019_w, 1428160512
+        );
+        if (this.openGLWarning1 != null) {
+            this.drawString(this.fontRendererObj, this.openGLWarning1, this.field_92022_t, this.field_92021_u, -1);
+        }
+        if (this.openGLWarning2 != null) {
+            this.drawString(this.fontRendererObj, this.openGLWarning2, (this.width - this.field_92024_r) / 2, this.field_92021_u + 12, -1);
+        }
+    }
 
-		if (!this.mc.isDemo()) {
-			GlStateManager.pushMatrix();
-			GlStateManager.scale(0.75f, 0.75f, 0.75f);
-			int www = 0;
-			int hhh = 0;
-			s1 = EaglercraftVersion.mainMenuStringG;
-			if (s1 != null) {
-				www = this.fontRendererObj.getStringWidth(s1);
-				hhh += 10;
-			}
-			s1 = EaglercraftVersion.mainMenuStringH;
-			if (s1 != null) {
-				www = Math.max(www, this.fontRendererObj.getStringWidth(s1));
-				hhh += 10;
-			}
-			if (www > 0) {
-				drawRect(0, 0, www + 6, hhh + 4, 0x55200000);
-				s1 = EaglercraftVersion.mainMenuStringG;
-				if (s1 != null) {
-					www = this.fontRendererObj.getStringWidth(s1);
-					this.drawString(this.fontRendererObj, s1, 3, 3, 0xFFFFFF99);
-				}
-				s1 = EaglercraftVersion.mainMenuStringH;
-				if (s1 != null) {
-					www = Math.max(www, this.fontRendererObj.getStringWidth(s1));
-					this.drawString(this.fontRendererObj, s1, 3, 13, 0xFFFFFF99);
-				}
-			}
-			if (EagRuntime.getConfiguration().isEnableSignatureBadge()) {
-				UpdateCertificate cert = UpdateService.getClientCertificate();
-				GlStateManager.scale(0.66667f, 0.66667f, 0.66667f);
-				if (cert != null) {
-					s1 = I18n.format("update.digitallySigned",
-							GuiUpdateVersionSlot.dateFmt.format(new Date(cert.sigTimestamp)));
-				} else {
-					s1 = I18n.format("update.signatureInvalid");
-				}
-				www = this.fontRendererObj.getStringWidth(s1) + 14;
-				drawRect((this.width * 2 - www) / 2, 0, (this.width * 2 - www) / 2 + www, 12, 0x33000000);
-				GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
-				this.drawString(this.fontRendererObj, s1, (this.width * 2 - www) / 2 + 12, 2,
-						cert != null ? 0xFFFFFF99 : 0xFFFF5555);
-				GlStateManager.scale(0.6f, 0.6f, 0.6f);
-				mc.getTextureManager().bindTexture(eaglerGuiTextures);
-				drawTexturedModalRect((int) ((this.width * 2 - www) / 2 / 0.6f) + 2, 1, cert != null ? 32 : 16, 0, 16,
-						16);
-			}
-			GlStateManager.popMatrix();
-		}
+    // =========================
+    // STATIC SPLASH TEXT
+    // =========================
+    this.drawCenteredString(
+        this.fontRendererObj, this.splashText, this.width / 2, 70, 0xFFFF55
+    );
 
-		String lbl = "CREDITS.txt";
-		int w = fontRendererObj.getStringWidth(lbl) * 3 / 4;
+    // DELETED THE FRAGILE BLACKOUT GuiTSPOverlay.draw INTERRUPT LOOP FROM HERE
 
-		if (i >= (this.width - w - 4) && i <= this.width && j >= 0 && j <= 9) {
-			Mouse.showCursor(EnumCursorType.HAND);
-			drawRect((this.width - w - 4), 0, this.width, 10, 0x55000099);
-		} else {
-			drawRect((this.width - w - 4), 0, this.width, 10, 0x55200000);
-		}
+    // =========================
+    // FOOTER TEXT
+    // =========================
+    String s = EaglercraftVersion.mainMenuStringA;
+    if (this.mc.isDemo()) s += " Demo";
+    this.drawString(this.fontRendererObj, s, 2, this.height - 20, -1);
+    
+    s = EaglercraftVersion.mainMenuStringB;
+    this.drawString(this.fontRendererObj, s, 2, this.height - 10, -1);
+    
+    String s1 = EaglercraftVersion.mainMenuStringC;
+    this.drawString(this.fontRendererObj, s1, this.width - this.fontRendererObj.getStringWidth(s1) - 2, this.height - 20, -1);
+    
+    s1 = EaglercraftVersion.mainMenuStringD;
+    if (this.mc.isDemo()) {
+        s1 = "Copyright Mojang AB. Do not distribute!";
+    }
+    this.drawString(this.fontRendererObj, s1, this.width - this.fontRendererObj.getStringWidth(s1) - 2, this.height - 10, -1);
 
-		GlStateManager.pushMatrix();
-		GlStateManager.translate((this.width - w - 2), 2.0f, 0.0f);
-		GlStateManager.scale(0.75f, 0.75f, 0.75f);
-		drawString(fontRendererObj, lbl, 0, 0, 16777215);
-		GlStateManager.popMatrix();
+    // =========================
+    // EXTRA OVERLAYS
+    // =========================
+    this.updateCheckerOverlay.drawScreen(i, j, f);
+    GlStateManager.clear(GL_DEPTH_BUFFER_BIT);
+    super.drawScreen(i, j, f);
+}
 
-		this.updateCheckerOverlay.drawScreen(i, j, f);
-		super.drawScreen(i, j, f);
-	}
-
-	/**+
-	 * Called when the mouse is clicked. Args : mouseX, mouseY,
-	 * clickedButton
-	 */
-	protected void mouseClicked(int par1, int par2, int par3) {
-		if (par3 == 0) {
-			String lbl = "CREDITS.txt";
-			int w = fontRendererObj.getStringWidth(lbl) * 3 / 4;
-			if (par1 >= (this.width - w - 4) && par1 <= this.width && par2 >= 0 && par2 <= 10) {
-				String resStr = EagRuntime.getResourceString("/assets/eagler/CREDITS.txt");
-				if (resStr != null) {
-					EagRuntime.openCreditsPopup(resStr);
-				}
-				mc.getSoundHandler()
-						.playSound(PositionedSoundRecord.create(new ResourceLocation("gui.button.press"), 1.0F));
-				return;
-			}
-		}
-		this.updateCheckerOverlay.mouseClicked(par1, par2, par3);
-		super.mouseClicked(par1, par2, par3);
-	}
 }

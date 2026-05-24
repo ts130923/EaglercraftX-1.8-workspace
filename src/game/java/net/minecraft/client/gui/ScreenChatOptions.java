@@ -1,6 +1,5 @@
 package net.minecraft.client.gui;
 
-import net.lax1dude.eaglercraft.v1_8.EagRuntime;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
 
@@ -29,12 +28,6 @@ public class ScreenChatOptions extends GuiScreen {
 			GameSettings.Options.CHAT_VISIBILITY, GameSettings.Options.CHAT_COLOR, GameSettings.Options.CHAT_LINKS,
 			GameSettings.Options.CHAT_OPACITY, GameSettings.Options.CHAT_LINKS_PROMPT, GameSettings.Options.CHAT_SCALE,
 			GameSettings.Options.CHAT_HEIGHT_FOCUSED, GameSettings.Options.CHAT_HEIGHT_UNFOCUSED,
-			GameSettings.Options.CHAT_WIDTH, GameSettings.Options.REDUCED_DEBUG_INFO,
-			GameSettings.Options.EAGLER_PROFANITY_FILTER };
-	private static final GameSettings.Options[] no_profanity_filter = new GameSettings.Options[] {
-			GameSettings.Options.CHAT_VISIBILITY, GameSettings.Options.CHAT_COLOR, GameSettings.Options.CHAT_LINKS,
-			GameSettings.Options.CHAT_OPACITY, GameSettings.Options.CHAT_LINKS_PROMPT, GameSettings.Options.CHAT_SCALE,
-			GameSettings.Options.CHAT_HEIGHT_FOCUSED, GameSettings.Options.CHAT_HEIGHT_UNFOCUSED,
 			GameSettings.Options.CHAT_WIDTH, GameSettings.Options.REDUCED_DEBUG_INFO };
 	private final GuiScreen parentScreen;
 	private final GameSettings game_settings;
@@ -54,10 +47,8 @@ public class ScreenChatOptions extends GuiScreen {
 		int i = 0;
 		this.field_146401_i = I18n.format("options.chat.title", new Object[0]);
 
-		boolean profanityFilterForce = EagRuntime.getConfiguration().isForceProfanityFilter();
-		GameSettings.Options[] opts = profanityFilterForce ? no_profanity_filter : field_146399_a;
-		for (int j = 0; j < opts.length; ++j) {
-			GameSettings.Options gamesettings$options = opts[j];
+		for (int j = 0; j < field_146399_a.length; ++j) {
+			GameSettings.Options gamesettings$options = field_146399_a[j];
 			if (gamesettings$options.getEnumFloat()) {
 				this.buttonList.add(new GuiOptionSlider(gamesettings$options.returnEnumOrdinal(),
 						this.width / 2 - 155 + i % 2 * 160, this.height / 6 + 24 * (i >> 1), gamesettings$options));
@@ -71,7 +62,7 @@ public class ScreenChatOptions extends GuiScreen {
 		}
 
 		this.buttonList.add(new GuiButton(200, this.width / 2 - 100,
-				this.height / 6 + (profanityFilterForce ? 130 : 154), I18n.format("gui.done", new Object[0])));
+				this.height / 6 + 130, I18n.format("gui.done", new Object[0])));
 	}
 
 	/**+

@@ -54,6 +54,7 @@ public class GuiNewChat extends Gui {
 	}
 
 	public void drawChat(int parInt1) {
+		if(this.mc.gameSettings.chatHidden) return;
 		if (this.mc.gameSettings.chatVisibility != EntityPlayer.EnumChatVisibility.HIDDEN) {
 			int i = this.getLineCount();
 			boolean flag = false;

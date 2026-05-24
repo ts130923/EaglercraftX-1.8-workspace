@@ -296,20 +296,45 @@ public class GuiChat extends GuiScreenVisualViewport {
 	}
 
 	public void drawScreen0(int i, int j, float f) {
-		drawRect(2, this.height - 14, this.width - 2, this.height - 2, Integer.MIN_VALUE);
+	drawRect(2, this.height - 14, this.width - 2, this.height - 2, Integer.MIN_VALUE);
+
+	String originalText = this.inputField.getText();
+	String lower = originalText.toLowerCase();
+
+	if(lower.startsWith("/login ") || lower.startsWith("/l ") || lower.startsWith("/pv ") || lower.startsWith("/pw ")) {
+		int space = originalText.indexOf(" ");
+
+		if(space != -1 && space + 1 < originalText.length()) {
+			String cmd = originalText.substring(0, space + 1);
+			String pass = originalText.substring(space + 1);
+
+			String stars = "";
+			for(int x = 0; x < pass.length(); x++) {
+				stars += "*";
+			}
+
+			this.fontRendererObj.drawStringWithShadow(cmd + stars, 4, this.height - 12, 14737632);
+		}else {
+			this.inputField.drawTextBox();
+		}
+	}else {
 		this.inputField.drawTextBox();
-		GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
-		IChatComponent ichatcomponent = this.mc.ingameGUI.getChatGUI()
-				.getChatComponent(PointerInputAbstraction.getVCursorX(), PointerInputAbstraction.getVCursorY());
-		if (ichatcomponent != null && ichatcomponent.getChatStyle().getChatHoverEvent() != null) {
-			this.handleComponentHover(ichatcomponent, i, j);
-		}
+	}
 
-		if (exitButton != null) {
-			exitButton.yPosition = 3 + mc.guiAchievement.getHeight();
-		}
+	GlStateManager.color(1.0f, 1.0f, 1.0f, 1.0f);
 
-		super.drawScreen0(i, j, f);
+	IChatComponent ichatcomponent = this.mc.ingameGUI.getChatGUI()
+			.getChatComponent(PointerInputAbstraction.getVCursorX(), PointerInputAbstraction.getVCursorY());
+
+	if (ichatcomponent != null && ichatcomponent.getChatStyle().getChatHoverEvent() != null) {
+		this.handleComponentHover(ichatcomponent, i, j);
+	}
+
+	if (exitButton != null) {
+		exitButton.yPosition = 3 + mc.guiAchievement.getHeight();
+	}
+
+	super.drawScreen0(i, j, f);
 	}
 
 	public void onAutocompleteResponse(String[] parArrayOfString) {

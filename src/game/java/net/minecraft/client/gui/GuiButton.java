@@ -80,47 +80,63 @@ public class GuiButton extends Gui {
 	 * Draws this button to the screen.
 	 */
 	public void drawButton(Minecraft mc, int mouseX, int mouseY) {
-		if (this.visible) {
-			FontRenderer fontrenderer = mc.fontRendererObj;
-			mc.getTextureManager().bindTexture(buttonTextures);
-			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-			this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width
-					&& mouseY < this.yPosition + this.height;
-			if (this.enabled && this.hovered) {
-				Mouse.showCursor(EnumCursorType.HAND);
-			}
-			int i = this.getHoverState(this.hovered);
-			GlStateManager.enableBlend();
-			GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
-			GlStateManager.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			this.drawTexturedModalRect(this.xPosition, this.yPosition, 0, 46 + i * 20, this.width / 2, this.height);
-			this.drawTexturedModalRect(this.xPosition + this.width / 2, this.yPosition, 200 - this.width / 2,
-					46 + i * 20, this.width / 2, this.height);
-			this.mouseDragged(mc, mouseX, mouseY);
-			int j = 14737632;
-			if (!this.enabled) {
-				j = 10526880;
-			} else if (this.hovered) {
-				j = 16777120;
-			}
+    if (!this.visible) {
+        return;
+    }
 
-			if (fontScale == 1.0f) {
-				this.drawCenteredString(fontrenderer, this.displayString, this.xPosition + this.width / 2,
-						this.yPosition + (this.height - 8) / 2, j);
-			} else {
-				float xScale = fontScale;
-				float yScale = 1.0f + (fontScale - 1.0f) * 0.7f;
-				float strWidth = fontrenderer.getStringWidth(displayString) / xScale;
-				GlStateManager.pushMatrix();
-				GlStateManager.translate(this.xPosition + this.width / 2,
-						this.yPosition + (this.height - 8 * yScale) / 2, 1.0f);
-				GlStateManager.scale(xScale, yScale, 1.0f);
-				GlStateManager.translate(-strWidth * 0.5f * xScale, 0.0f, 0.0f);
-				fontrenderer.drawStringWithShadow(displayString, 0, 0, j);
-				GlStateManager.popMatrix();
-			}
-		}
-	}
+    FontRenderer fr = mc.fontRendererObj;
+
+    this.hovered = mouseX >= this.xPosition &&
+                   mouseY >= this.yPosition &&
+                   mouseX < this.xPosition + this.width &&
+                   mouseY < this.yPosition + this.height;
+
+    if (this.enabled && this.hovered) {
+        Mouse.showCursor(EnumCursorType.HAND);
+    }
+
+    GlStateManager.enableBlend();
+    GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+
+    // BLACK BUTTON BACKGROUND
+    int color = this.hovered ? 0xFF1A1A1A : 0xDD000000;
+
+    drawRect(
+        this.xPosition,
+        this.yPosition,
+        this.xPosition + this.width,
+        this.yPosition + this.height,
+        color
+    );
+
+    // OPTIONAL BORDER
+    drawHorizontalLine(this.xPosition, this.xPosition + this.width, this.yPosition, 0xFF5500AA);
+    drawHorizontalLine(this.xPosition, this.xPosition + this.width, this.yPosition + this.height, 0xFF5500AA);
+
+    drawVerticalLine(this.xPosition, this.yPosition, this.yPosition + this.height, 0xFF5500AA);
+    drawVerticalLine(this.xPosition + this.width, this.yPosition, this.yPosition + this.height, 0xFF5500AA);
+
+    // TEXT COLOR
+    int textColor;
+
+    if (!this.enabled) {
+        textColor = 0x777777;
+    } else if (this.hovered) {
+        textColor = 0xFFFFFF;
+    } else {
+        textColor = 0xDDDDDD;
+    }
+
+    this.drawCenteredString(
+        fr,
+        this.displayString,
+        this.xPosition + this.width / 2,
+        this.yPosition + (this.height - 8) / 2,
+        textColor
+    );
+
+    this.mouseDragged(mc, mouseX, mouseY);
+}
 
 	/**+
 	 * Fired when the mouse button is dragged. Equivalent of

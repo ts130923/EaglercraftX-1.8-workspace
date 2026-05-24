@@ -132,8 +132,11 @@ public class GuiOptions extends GuiScreen implements GuiYesNoCallback {
 		this.buttonList.add(btn = new GuiButton(104, this.width / 2 + 5, this.height / 6 + 144 - 6, 150, 20,
 				I18n.format("options.debugConsoleButton", new Object[0])));
 		btn.enabled = EagRuntime.getPlatformType() != EnumPlatformType.DESKTOP;
-		this.buttonList.add(new GuiButton(200, this.width / 2 - 100, this.height / 6 + 168,
+		this.buttonList.add(new GuiButton(2001, this.width / 2 - 155, this.height / 6 + 168, 150, 20,
+				"TSP client exclusive"));
+		this.buttonList.add(new GuiButton(200, this.width / 2 - 100, this.height / 6 + 192,
 				I18n.format("gui.done", new Object[0])));
+
 	}
 
 	public String func_175355_a(EnumDifficulty parEnumDifficulty) {
@@ -190,6 +193,10 @@ public class GuiOptions extends GuiScreen implements GuiYesNoCallback {
 								109));
 			}
 
+			if (parGuiButton.id == 2001) {
+				this.mc.gameSettings.saveOptions();
+				this.mc.displayGuiScreen(new GuiTSPClientExclusive(this, this.game_settings_1));
+			}
 			if (parGuiButton.id == 110) {
 				this.mc.gameSettings.saveOptions();
 				this.mc.displayGuiScreen(new GuiCustomizeSkin(this));

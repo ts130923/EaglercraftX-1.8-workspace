@@ -4,6 +4,7 @@ import static net.lax1dude.eaglercraft.v1_8.opengl.RealOpenGLEnums.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import net.lax1dude.eaglercraft.v1_8.Display;
 import net.lax1dude.eaglercraft.v1_8.EagRuntime;
@@ -43,6 +44,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.C16PacketClientStatus;
 import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
@@ -82,6 +84,8 @@ public class GuiIngame extends Gui {
 	private static final ResourceLocation vignetteTexPath = new ResourceLocation("textures/misc/vignette.png");
 	private static final ResourceLocation widgetsTexPath = new ResourceLocation("textures/gui/widgets.png");
 	private static final ResourceLocation pumpkinBlurTexPath = new ResourceLocation("textures/misc/pumpkinblur.png");
+	private static final ResourceLocation inventoryBackground = new ResourceLocation(
+			"textures/gui/container/inventory.png");
 	private final EaglercraftRandom rand = new EaglercraftRandom();
 	private final Minecraft mc;
 	private final RenderItem itemRenderer;
@@ -103,6 +107,7 @@ public class GuiIngame extends Gui {
 	public final GuiOverlayDebug overlayDebug;
 	private final GuiSpectator spectatorGui;
 	private final GuiPlayerTabOverlay overlayPlayerList;
+	private final GuiSubtitleOverlay subtitleOverlay;
 	private int field_175195_w;
 	private String field_175201_x = "";
 	private String field_175200_y = "";
@@ -125,6 +130,7 @@ public class GuiIngame extends Gui {
 		this.itemRenderer = mcIn.getRenderItem();
 		this.overlayDebug = new GuiOverlayDebug(mcIn);
 		this.spectatorGui = new GuiSpectator(mcIn);
+		this.subtitleOverlay = new GuiSubtitleOverlay(mcIn);
 		this.persistantChatGUI = new GuiNewChat(mcIn);
 		this.overlayPlayerList = new GuiPlayerTabOverlay(mcIn, this);
 		this.func_175177_a();
@@ -136,11 +142,147 @@ public class GuiIngame extends Gui {
 		this.field_175193_B = 20;
 	}
 
+	public void addAutoSubtitle(String id) {
+
+    String s = id.toLowerCase();
+    String text = null;
+
+    // =========================
+    // UI / INTERACTION (HIGH PRIORITY)
+    // =========================
+    if (s.contains("gui.button.press") || s.contains("button")) {
+        text = "Button clicks";
+    }
+    else if (s.contains("chest.open")) {
+        text = "Chest opens";
+    }
+    else if (s.contains("chest.close")) {
+        text = "Chest closes";
+    }
+    else if (s.contains("door.open")) {
+        text = "Door opens";
+    }
+    else if (s.contains("door.close")) {
+        text = "Door closes";
+    }
+    else if (s.contains("anvil")) {
+        text = "Anvil clangs";
+    }
+
+    // =========================
+    // ITEMS / XP
+    // =========================
+    else if (s.contains("item.pickup") || s.contains("pop") || s.contains("pickup")) {
+        text = "Item picked up";
+    }
+    else if (s.contains("xp.orb") || s.contains("orb")) {
+        text = "Experience collected";
+    }
+    else if (s.contains("bow.shoot")) {
+        text = "Bow shoots";
+    }
+    else if (s.contains("arrow.hit")) {
+        text = "Arrow hits";
+    }
+
+    // =========================
+    // MOVEMENT (FILTERED TO AVOID SPAM)
+    // =========================
+    else if (s.contains("liquid.swim") || s.contains("swim")) {
+        text = "Swimming";
+    }
+    else if (s.contains("splash")) {
+        text = "Splashing";
+    }
+    else if (s.contains("fall.damage")) {
+        text = "Falling";
+    }
+    else if (s.contains("ladder")) {
+        text = "Climbing";
+    }
+
+    // STEP SOUNDS (ONLY ONE GENERIC)
+    else if (s.contains("step")) {
+        // prevents grass/stone spam spam spam
+        text = "Footsteps";
+    }
+
+// =========================
+// BLOCKS (PLACEMENT + BREAK)
+// =========================
+// =========================
+// BLOCKS (FIXED ORDER)
+// =========================
+else if (s.contains("place") || s.contains(".place")) {
+    text = "Block placed";
+}
+else if (s.contains("dig") || s.contains("break")) {
+    text = "Block breaking";
+}
+else if (s.contains("piston")) {
+    text = "Piston moves";
+}
+
+    // =========================
+    // COMBAT
+    // =========================
+    else if (s.contains("explode")) {
+        text = "Explosion";
+    }
+    else if (s.contains("hurt")) {
+    text = "Hurt";
+}
+else if (s.contains("death")) {
+    text = "Death";
+}
+
+    // =========================
+    // MOBS (GROUPED SMARTLY)
+    // =========================
+    else if (s.contains("zombie")) text = "Zombie groans";
+    else if (s.contains("skeleton")) text = "Skeleton rattles";
+    else if (s.contains("creeper")) text = "Creeper hisses";
+    else if (s.contains("spider")) text = "Spider hisses";
+    else if (s.contains("enderman")) text = "Enderman screeches";
+    else if (s.contains("slime")) text = "Slime squishes";
+    else if (s.contains("ghast")) text = "Ghast cries";
+    else if (s.contains("blaze")) text = "Blaze crackles";
+    else if (s.contains("witch")) text = "Witch cackles";
+
+    // PASSIVE
+    else if (s.contains("cow")) text = "Cow moos";
+    else if (s.contains("pig")) text = "Pig oinks";
+    else if (s.contains("sheep")) text = "Sheep baas";
+    else if (s.contains("chicken")) text = "Chicken clucks";
+    else if (s.contains("wolf")) text = "Wolf pants";
+    else if (s.contains("cat")) text = "Cat meows";
+    else if (s.contains("horse")) text = "Horse neighs";
+    else if (s.contains("villager")) text = "Villager mumbles";
+
+    // =========================
+    // WORLD / ENVIRONMENT
+    // =========================
+    else if (s.contains("fire")) text = "Fire crackles";
+    else if (s.contains("lava")) text = "Lava pops";
+    else if (s.contains("rain")) text = "Rain falls";
+    else if (s.contains("thunder")) text = "Thunder rumbles";
+    else if (s.contains("portal")) text = "Portal whooshes";
+    else if (s.contains("fizz")) text = "Fizzing";
+
+    // =========================
+    // IMPORTANT: SILENT FALLBACK
+    // =========================
+    else return;
+
+    subtitleOverlay.addSubtitle(text);
+}
+
 	public void renderGameOverlay(float partialTicks) {
 		ScaledResolution scaledresolution = mc.scaledResolution;
 		int i = scaledresolution.getScaledWidth();
 		int j = scaledresolution.getScaledHeight();
 		this.mc.entityRenderer.setupOverlayRendering();
+		this.subtitleOverlay.renderSubtitles(scaledresolution);
 		GlStateManager.enableBlend();
 		GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
 		GlStateManager.enableDepth();
@@ -173,6 +315,7 @@ public class GuiIngame extends Gui {
 		this.renderBossHealth();
 		if (this.mc.playerController.shouldDrawHUD()) {
 			this.renderPlayerStats(scaledresolution);
+			this.renderActivePotionIcons(scaledresolution);
 		}
 
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -217,6 +360,144 @@ public class GuiIngame extends Gui {
 				GlStateManager.popMatrix();
 			}
 		}
+
+// =========================
+// COMPASS HUD (CENTER TOP)
+// =========================
+
+EntityPlayer p = this.mc.thePlayer;
+
+float yaw = p.rotationYaw % 360F;
+if (yaw < 0) yaw += 360F;
+
+// smooth compass angle
+float angle = yaw;
+
+// degrees display
+String degreeText = ((int) yaw) + " deg";
+
+// directions
+String[] dirs = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
+
+String compass = "";
+
+for (int n = -2; n <= 2; n++) {
+    float a = (angle + n * 45F + 360F) % 360F;
+    int index = (int)(a / 45F) % 8;
+
+    if (n == 0) {
+        compass += dirs[index] + " ^ ";
+    } else {
+        compass += dirs[index] + "   ";
+    }
+}
+
+int centerX = scaledresolution.getScaledWidth() / 2;
+
+int textWidth = this.getFontRenderer().getStringWidth(compass);
+int degreeWidth = this.getFontRenderer().getStringWidth(degreeText);
+
+int y = 5;
+
+GlStateManager.pushMatrix();
+GlStateManager.enableBlend();
+GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+
+// compass
+this.getFontRenderer().drawStringWithShadow(
+    compass,
+    centerX - textWidth / 2,
+    y,
+    0xFFFFFF
+);
+
+// degrees
+this.getFontRenderer().drawStringWithShadow(
+    degreeText,
+    centerX - degreeWidth / 2,
+    y + 10,
+    0xFFFFFF
+);
+
+GlStateManager.popMatrix();
+
+int fps = Minecraft.getDebugFPS();
+int entityCount = this.mc.theWorld.loadedEntityList.size();
+
+String info = "FPS: " + fps + " | Entities: " + entityCount;
+
+// top-left corner (safe, never overlaps center compass)
+int fpsx = 5;
+int fpsy = 5;
+
+int color = fps >= 30 ? 0x00FF00 : fps >= 10 ? 0xFFFF00 : 0xFF5555;
+
+this.getFontRenderer().drawStringWithShadow(info, fpsx, fpsy, color);
+
+EntityPlayer playerDur = this.mc.thePlayer;
+
+if (playerDur != null) {
+
+    int xDur = 2;
+    int yDur = 14; // slightly lower, under FPS
+
+    ItemStack[] armor = playerDur.inventory.armorInventory;
+    ItemStack hand = playerDur.getHeldItem();
+
+    // =========================
+    // ARMOR (helmet → boots)
+    // =========================
+    for (int slot = 3; slot >= 0; slot--) {
+
+        ItemStack item = armor[slot];
+
+        if (item != null) {
+
+            // draw item icon
+            this.itemRenderer.renderItemAndEffectIntoGUI(item, xDur, yDur);
+
+            int max = item.getMaxDamage();
+            int cur = max - item.getItemDamage();
+            float pct = (float) cur / (float) max;
+
+            int durColor = 0x55FF55;
+            if (pct < 0.66f) durColor = 0xFFFF55;
+            if (pct < 0.33f) durColor = 0xFF5555;
+
+            this.getFontRenderer().drawStringWithShadow(
+                "" + cur,
+                xDur + 18,
+                yDur + 4,
+                durColor
+            );
+        }
+
+        yDur += 16;
+    }
+
+    // =========================
+    // MAIN HAND ITEM
+    // =========================
+    if (hand != null && hand.isItemStackDamageable()) {
+
+        this.itemRenderer.renderItemAndEffectIntoGUI(hand, xDur, yDur);
+
+        int max = hand.getMaxDamage();
+        int cur = max - hand.getItemDamage();
+        float pct = (float) cur / (float) max;
+
+        int durColor = 0x55FF55;
+        if (pct < 0.66f) durColor = 0xFFFF55;
+        if (pct < 0.33f) durColor = 0xFF5555;
+
+        this.getFontRenderer().drawStringWithShadow(
+            "" + cur,
+            xDur + 18,
+            yDur + 4,
+            durColor
+        );
+    }
+}
 
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		drawEaglerInteractButton(scaledresolution);
@@ -328,6 +609,44 @@ public class GuiIngame extends Gui {
 		GlStateManager.enableAlpha();
 	}
 
+	private void renderActivePotionIcons(ScaledResolution scaledResolution) {
+		List<PotionEffect> effects = this.mc.thePlayer.getActivePotionEffectsList();
+		if(effects.isEmpty()) {
+			return;
+		}
+
+		GlStateManager.enableBlend();
+		GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, 1, 0);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		GlStateManager.disableLighting();
+		this.mc.getTextureManager().bindTexture(inventoryBackground);
+
+		int i = 0;
+		int right = scaledResolution.getScaledWidth() - 6;
+		int top = 6;
+		for(PotionEffect effect : effects) {
+			Potion potion = Potion.potionTypes[effect.getPotionID()];
+			if(potion == null || !potion.hasStatusIcon()) {
+				continue;
+			}
+
+			int x = right - 24 - (i % 8) * 24;
+			int y = top + (i / 8) * 24;
+			int color = potion.getLiquidColor();
+			float red = (float)(color >> 16 & 255) / 255.0F;
+			float green = (float)(color >> 8 & 255) / 255.0F;
+			float blue = (float)(color & 255) / 255.0F;
+			drawRect(x, y, x + 22, y + 22, 0xCC000000 | color);
+			int iconIndex = potion.getStatusIconIndex();
+			GlStateManager.color(red, green, blue, 1.0F);
+			this.drawTexturedModalRect(x + 2, y + 2, iconIndex % 8 * 18, 198 + iconIndex / 8 * 18, 18, 18);
+			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+			++i;
+		}
+		this.mc.getTextureManager().bindTexture(icons);
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+	}
+
 	public void renderGameOverlayCrosshairs(int scaledResWidth, int scaledResHeight) {
 		if (this.showCrosshair()) {
 			GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -399,32 +718,53 @@ public class GuiIngame extends Gui {
 	}
 
 	public void renderExpBar(ScaledResolution parScaledResolution, int parInt1) {
-		this.mc.getTextureManager().bindTexture(Gui.icons);
-		int i = this.mc.thePlayer.xpBarCap();
-		if (i > 0) {
-			short short1 = 182;
-			int j = (int) (this.mc.thePlayer.experience * (float) (short1 + 1));
-			int k = parScaledResolution.getScaledHeight() - 32 + 3;
-			this.drawTexturedModalRect(parInt1, k, 0, 64, short1, 5);
-			if (j > 0) {
-				this.drawTexturedModalRect(parInt1, k, 0, 69, j, 5);
-			}
-		}
+    this.mc.getTextureManager().bindTexture(Gui.icons);
 
-		if (this.mc.thePlayer.experienceLevel > 0) {
-			int i1 = 8453920;
-			String s = "" + this.mc.thePlayer.experienceLevel;
-			int j1 = (parScaledResolution.getScaledWidth() - this.getFontRenderer().getStringWidth(s)) / 2;
-			int l = parScaledResolution.getScaledHeight() - 31 - 4;
-			boolean flag = false;
-			this.getFontRenderer().drawString(s, j1 + 1, l, 0);
-			this.getFontRenderer().drawString(s, j1 - 1, l, 0);
-			this.getFontRenderer().drawString(s, j1, l + 1, 0);
-			this.getFontRenderer().drawString(s, j1, l - 1, 0);
-			this.getFontRenderer().drawString(s, j1, l, i1);
-		}
+    int i = this.mc.thePlayer.xpBarCap();
+    if (i > 0) {
+        short short1 = 182;
+        int j = (int) (this.mc.thePlayer.experience * (float) (short1 + 1));
+        int k = parScaledResolution.getScaledHeight() - 32 + 3;
 
-	}
+        this.drawTexturedModalRect(parInt1, k, 0, 64, short1, 5);
+        if (j > 0) {
+            this.drawTexturedModalRect(parInt1, k, 0, 69, j, 5);
+        }
+    }
+
+    // =========================
+    // XP LEVEL + TOTAL XP HUD
+    // =========================
+    if (this.mc.thePlayer.experienceLevel > 0) {
+        EntityPlayer p = this.mc.thePlayer;
+
+        int level = p.experienceLevel;
+        int totalXp = getTotalXP(p);
+
+        String levelText = "" + level;
+
+        int j1 = (parScaledResolution.getScaledWidth()
+                - this.getFontRenderer().getStringWidth(levelText)) / 2;
+
+        int l = parScaledResolution.getScaledHeight() - 31 - 4;
+
+        this.getFontRenderer().drawString(levelText, j1 + 1, l, 0);
+        this.getFontRenderer().drawString(levelText, j1 - 1, l, 0);
+        this.getFontRenderer().drawString(levelText, j1, l + 1, 0);
+        this.getFontRenderer().drawString(levelText, j1, l - 1, 0);
+        this.getFontRenderer().drawString(levelText, j1, l, 8453920);
+
+        // Custom XP text
+        String xpText = totalXp + " XP | Level " + level;
+
+        int x = (parScaledResolution.getScaledWidth()
+                - this.getFontRenderer().getStringWidth(xpText)) / 2;
+
+        int y = l - 14;
+
+        this.getFontRenderer().drawStringWithShadow(xpText, x, y, 0xFFFFFF);
+    }
+}
 
 	public void func_181551_a(ScaledResolution parScaledResolution) {
 		if (this.remainingHighlightTicks > 0 && this.highlightingItemStack != null) {
@@ -1055,6 +1395,24 @@ public class GuiIngame extends Gui {
 	public int getUpdateCounter() {
 		return this.updateCounter;
 	}
+
+	public int getTotalXP(EntityPlayer p) {
+    int level = p.experienceLevel;
+    int total = 0;
+
+    for (int i = 0; i < level; i++) {
+        total += getXPForLevel(i);
+    }
+
+    total += (int)(p.experience * p.xpBarCap());
+    return total;
+}
+
+private int getXPForLevel(int level) {
+    if (level >= 30) return 112 + (level - 30) * 9;
+    if (level >= 15) return 37 + (level - 15) * 5;
+    return 7 + level * 2;
+}
 
 	public FontRenderer getFontRenderer() {
 		return this.mc.fontRendererObj;

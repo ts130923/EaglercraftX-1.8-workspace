@@ -71,17 +71,28 @@ public class GuiScreenWorking extends GuiScreen implements IProgressUpdate {
 	 * mouseY, renderPartialTicks
 	 */
 	public void drawScreen(int i, int j, float f) {
-		if (this.doneWorking) {
-			if (!this.mc.func_181540_al()) {
-				this.mc.displayGuiScreen((GuiScreen) null);
-			}
-
-		} else {
-			this.drawDefaultBackground();
-			this.drawCenteredString(this.fontRendererObj, this.field_146591_a, this.width / 2, 70, 16777215);
-			this.drawCenteredString(this.fontRendererObj, this.field_146589_f + " " + this.progress + "%",
-					this.width / 2, 90, 16777215);
-			super.drawScreen(i, j, f);
+	if (this.doneWorking) {
+		if (!this.mc.func_181540_al()) {
+			this.mc.displayGuiScreen((GuiScreen) null);
 		}
+		return;
 	}
+
+	//  FULL CLEAN RENDER RESET (THIS FIXES FLASHING)
+	net.lax1dude.eaglercraft.v1_8.opengl.GlStateManager.disableTexture2D();
+	net.lax1dude.eaglercraft.v1_8.opengl.GlStateManager.enableTexture2D();
+	net.lax1dude.eaglercraft.v1_8.opengl.GlStateManager.clearColor(0f, 0f, 0f, 1f);
+	net.lax1dude.eaglercraft.v1_8.opengl.GlStateManager.clear(
+		net.lax1dude.eaglercraft.v1_8.opengl.RealOpenGLEnums.GL_COLOR_BUFFER_BIT |
+		net.lax1dude.eaglercraft.v1_8.opengl.RealOpenGLEnums.GL_DEPTH_BUFFER_BIT
+	);
+
+	//  YOUR CUSTOM LOADING SCREEN (ONLY RENDER THIS)
+
+	float time = (System.currentTimeMillis() % 100000) / 1000.0f;
+
+GuiTSPOverlay.draw(width, height, time);
+
+	//  DO NOT call super.drawScreen here
+}
 }
